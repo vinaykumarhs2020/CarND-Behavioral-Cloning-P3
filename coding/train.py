@@ -1,37 +1,17 @@
-import csv
-import cv2
-import numpy as np
-print(cv2.__file__)
+#!/usr/bin/python 
 
-lines=[]
-with open('data_sample/driving_log.csv','rb') as csvfile:
-	reader=csv.reader(csvfile)
-	for line in reader:
-		lines.append(line)
 
-images=[]
-measurements=[]
-for line in lines:
-	source_path=line[0]
-	filename='data_sample/IMG/'+source_path.split('/')[-1]
-	image=cv2.imread(filename)
-	images.append(image)
-	measurements.append(float(line[3]))
-X_train = np.array(images)
-y_train = np.array(measurements)
+from utils import parse_csv, simple_generator
+from cnn_models import simple_model
 
-print(y_train.shape)
-print(X_train.shape)
+dataset_path='data_sample'
+training_samples, validation_samples=parse_csv(dataset_path,val_split=0.2)
 
-from keras.models import Sequential
-from keras.layers import Flatten, Dense, Lambda
+train_generator=simple_generator(training_samples,batch_size=32)
+validation_generator=simple_generator(validation_samples,batch_size=32)
 
-model = Sequential()
-model.add(Lambda(lambda x: x/255 - 0.5, input_shape=(160,320,3) ))
-model.add(Flatten())
-model.add(Dense(1))
-
-model.compile(loss='mse',optimizer='adam')
-model.fit(X_train,y_train, validation_split=0.2, shuffle=True, nb_epoch=7)
+model=simple_model()
+model.fit_generator(train_generator, samples_per_epoch=len(training_samples), 
+	validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=3)
 
 model.save('model.h5')
