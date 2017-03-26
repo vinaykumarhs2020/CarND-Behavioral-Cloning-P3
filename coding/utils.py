@@ -5,6 +5,9 @@ import cv2
 import csv
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
+
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 def parse_csv(dirname, val_split=None, correction=None):
@@ -63,14 +66,16 @@ def simple_generator(samples,batch_size=32):
 			y_train=np.array(angles)
 			yield shuffle(X_train,y_train)
 
-def plot_history(hist):
+def plot_history(hist,plot_name='model_history.png'):
 	''' 
 	Plots the history object
 	'''
+	fig=plt.figure()
 	plt.plot(hist['loss'])
 	plt.plot(hist['val_loss'])
 	plt.title('Model Training Display')
 	plt.ylabel('Mean squared error loss')
 	plt.xlabel('epoch')
 	plt.legend(['training_set','validation_set'], loc='upper right')
-	plt.show()
+	# plt.show()
+	fig.savefig(plot_name,dpi=fig.dpi)
